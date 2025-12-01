@@ -12,21 +12,17 @@ import ImperialGoogle
 
 struct ImperialFederatedLoginService: Identity.FederatedLoginService {
 
-    struct ProviderNameConverter: Sendable {
-        let nameToServiceType: @Sendable (Identity.Configuration.FederatedLogin.Provider.Name) -> (any FederatedService.Type)?
-        let serviceTypeToName: @Sendable (any FederatedService.Type) -> Identity.Configuration.FederatedLogin.Provider.Name?
-    }
-
-    let converter: ProviderNameConverter
+    let services: [Identity.Configuration.FederatedLogin.Provider.Name: any FederatedService.Type]
 
     init(
-        converter: ProviderNameConverter = .default,
+        services: [Identity.Configuration.FederatedLogin.Provider.Name: any FederatedService.Type]
     ) {
-        self.converter = converter
+        self.services = services
     }
 
     func register(
         router: any RoutesBuilder,
+        origin: URL,
         group: [PathComponent],
         config: Identity.Configuration.FederatedLogin,
         completion: @escaping @Sendable (
@@ -35,48 +31,27 @@ struct ImperialFederatedLoginService: Identity.FederatedLoginService {
             _ payload: String
         ) async throws -> some AsyncResponseEncodable
     ) throws {
-        let grouped = group.isEmpty ? router : router.grouped(group)
-
-        for provider in config.providers {
-            guard let service = converter.nameToServiceType(provider.name) else {
+        for (name, service) in services {
+            guard let provider = config.providers.first(where: { $0.name == name }) else {
                 throw IdentityError.unexpected(
-                    message: "Unsupported federated login provider name \(provider.name)"
+                    message: "Provider for name \(name) is not configured"
                 )
             }
-            try grouped.oAuth(
+
+            let loginPath = group + config.loginPath(for: provider)
+            let callbackPath = group + config.callbackPath(for: provider)
+            let loginURL = origin.appending(path: loginPath.string)
+            let callbackURL = origin.appending(path: callbackPath.string)
+
+            try router.oAuth(
                 from: service,
-                authenticate: config.loginPath(for: provider).string,
-                callback: config.callbackPath(for: provider).string,
+                authenticate: loginURL.absoluteString,
+                callback: callbackURL.absoluteString,
+                scope: provider.scope,
             ) { request, accessToken in
                 try await completion(provider, request, accessToken)
             }
         }
+
     }
-}
-
-extension ImperialFederatedLoginService.ProviderNameConverter {
-
-    static let `default`: Self = .init(
-        nameToServiceType: { name in
-            switch name {
-            case .google:
-                return Google.self
-            case .github:
-                return GitHub.self
-            default:
-                return nil
-            }
-        },
-        serviceTypeToName: { serviceType in
-            switch serviceType {
-            case is GitHub.Type:
-                return .github
-            case is Google.Type:
-                return .google
-            default:
-                fatalError("Unsupported service type \(serviceType)")
-            }
-        }
-    )
-
 }
