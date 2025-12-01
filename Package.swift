@@ -1,4 +1,4 @@
-// swift-tools-version:5.9
+// swift-tools-version:6.0
 import PackageDescription
 
 let package = Package(
@@ -10,8 +10,8 @@ let package = Package(
         .library(name: "IdentityImperial", targets: ["IdentityImperial"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/rozd/vapor-identity.git", from: "1.0.0"),
-        .package(url: "https://github.com/vapor-community/Imperial.git", from: "1.0.0"),
+        .package(path: "../vapor-identity"),
+        .package(url: "https://github.com/vapor-community/Imperial.git", from: "2.2.0"),
     ],
     targets: [
         .target(

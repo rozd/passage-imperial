@@ -1,26 +1,20 @@
-//
-//  Imperial.swift
-//  passten
-//
-//  Created by Max Rozdobudko on 11/30/25.
-//
-
 import Vapor
+import Identity
 import ImperialCore
 import ImperialGitHub
 import ImperialGoogle
 
-struct ImperialFederatedLoginService: Identity.FederatedLoginService {
+public struct ImperialFederatedLoginService: Identity.FederatedLoginService {
 
     let services: [Identity.Configuration.FederatedLogin.Provider.Name: any FederatedService.Type]
 
-    init(
+    public init(
         services: [Identity.Configuration.FederatedLogin.Provider.Name: any FederatedService.Type]
     ) {
         self.services = services
     }
 
-    func register(
+    public func register(
         router: any RoutesBuilder,
         origin: URL,
         group: [PathComponent],
