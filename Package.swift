@@ -2,22 +2,22 @@
 import PackageDescription
 
 let package = Package(
-    name: "vapor-identity-oauth-imperial",
+    name: "passage-imperial",
     platforms: [
         .macOS(.v13)
     ],
     products: [
-        .library(name: "IdentityImperial", targets: ["IdentityImperial"]),
+        .library(name: "PassageImperial", targets: ["PassageImperial"]),
     ],
     dependencies: [
-        .package(path: "../vapor-identity"),
+        .package(url: "https://github.com/rozd/passage.git", from: "0.0.1"),
         .package(url: "https://github.com/vapor-community/Imperial.git", from: "2.2.0"),
     ],
     targets: [
         .target(
-            name: "IdentityImperial",
+            name: "PassageImperial",
             dependencies: [
-                .product(name: "Identity", package: "vapor-identity"),
+                .product(name: "Passage", package: "passage"),
                 .product(name: "Imperial", package: "Imperial"),
             ]
         ),

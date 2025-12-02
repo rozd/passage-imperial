@@ -1,4 +1,5 @@
 {
+  "originHash" : "375b0db21fee2beb1795c06fb263198de83ada61d170d3f0aaef71450600d929",
   "pins" : [
     {
       "identity" : "async-http-client",
@@ -79,6 +80,15 @@
       "state" : {
         "revision" : "3498e60218e6003894ff95192d756e238c01f44e",
         "version" : "4.7.1"
+      }
+    },
+    {
+      "identity" : "passage",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/rozd/passage.git",
+      "state" : {
+        "revision" : "05e5e40fc732c0e41017319e2bd0f2f3219da1fc",
+        "version" : "0.0.1"
       }
     },
     {
@@ -307,5 +317,5 @@
       }
     }
   ],
-  "version" : 2
+  "version" : 3
 }

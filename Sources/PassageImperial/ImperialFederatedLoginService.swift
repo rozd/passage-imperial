@@ -1,15 +1,15 @@
 import Vapor
-import Identity
+import Passage
 import ImperialCore
 import ImperialGitHub
 import ImperialGoogle
 
-public struct ImperialFederatedLoginService: Identity.FederatedLoginService {
+public struct ImperialFederatedLoginService: Passage.FederatedLoginService {
 
-    let services: [Identity.Configuration.FederatedLogin.Provider.Name: any FederatedService.Type]
+    let services: [Passage.Configuration.FederatedLogin.Provider.Name: any FederatedService.Type]
 
     public init(
-        services: [Identity.Configuration.FederatedLogin.Provider.Name: any FederatedService.Type]
+        services: [Passage.Configuration.FederatedLogin.Provider.Name: any FederatedService.Type]
     ) {
         self.services = services
     }
@@ -18,16 +18,16 @@ public struct ImperialFederatedLoginService: Identity.FederatedLoginService {
         router: any RoutesBuilder,
         origin: URL,
         group: [PathComponent],
-        config: Identity.Configuration.FederatedLogin,
+        config: Passage.Configuration.FederatedLogin,
         completion: @escaping @Sendable (
-            _ provider: Identity.Configuration.FederatedLogin.Provider,
+            _ provider: Passage.Configuration.FederatedLogin.Provider,
             _ request: Request,
             _ payload: String
         ) async throws -> some AsyncResponseEncodable
     ) throws {
         for (name, service) in services {
             guard let provider = config.providers.first(where: { $0.name == name }) else {
-                throw IdentityError.unexpected(
+                throw PassageError.unexpected(
                     message: "Provider for name \(name) is not configured"
                 )
             }
