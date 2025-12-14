@@ -1,5 +1,5 @@
 {
-  "originHash" : "375b0db21fee2beb1795c06fb263198de83ada61d170d3f0aaef71450600d929",
+  "originHash" : "82210cc8c6f21b7258e2a6b599903a6564b726682cfde06366075fc7e4a0496b",
   "pins" : [
     {
       "identity" : "async-http-client",
@@ -85,10 +85,10 @@
     {
       "identity" : "passage",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/rozd/passage.git",
+      "location" : "https://github.com/vapor-community/passage.git",
       "state" : {
-        "revision" : "05e5e40fc732c0e41017319e2bd0f2f3219da1fc",
-        "version" : "0.0.1"
+        "revision" : "47c3dc3db95bccda6122bcd2d575a3ffb83f195d",
+        "version" : "0.0.3"
       }
     },
     {

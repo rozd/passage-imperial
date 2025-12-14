@@ -6,23 +6,24 @@ import ImperialGoogle
 
 public struct ImperialFederatedLoginService: Passage.FederatedLoginService {
 
-    let services: [Passage.Configuration.FederatedLogin.Provider.Name: any FederatedService.Type]
+    public let services: [Passage.FederatedLogin.Provider.Name: any FederatedService.Type]
 
     public init(
-        services: [Passage.Configuration.FederatedLogin.Provider.Name: any FederatedService.Type]
+        services: [Passage.FederatedLogin.Provider.Name: any FederatedService.Type]
     ) {
         self.services = services
     }
+
+    // MARK: - Register with onSignIn callback (fetches user info)
 
     public func register(
         router: any RoutesBuilder,
         origin: URL,
         group: [PathComponent],
         config: Passage.Configuration.FederatedLogin,
-        completion: @escaping @Sendable (
-            _ provider: Passage.Configuration.FederatedLogin.Provider,
+        onSignIn: @escaping @Sendable (
             _ request: Request,
-            _ payload: String
+            _ identity: FederatedIdentity,
         ) async throws -> some AsyncResponseEncodable
     ) throws {
         for (name, service) in services {
@@ -42,10 +43,169 @@ public struct ImperialFederatedLoginService: Passage.FederatedLoginService {
                 authenticate: loginURL.absoluteString,
                 callback: callbackURL.absoluteString,
                 scope: provider.scope,
-            ) { request, accessToken in
-                try await completion(provider, request, accessToken)
+            ) { (request: Request, accessToken: String) in
+
+                // Fetch user info from the OAuth provider
+                let identity = try await self.fetchIdentity(
+                    from: service,
+                    using: accessToken,
+                    for: provider,
+                    client: request.client
+                )
+
+                return try await onSignIn(request, identity)
             }
         }
-
     }
+}
+
+// MARK: - Fetch Identity
+
+extension ImperialFederatedLoginService {
+
+    func fetchIdentity(
+        from service: any FederatedService.Type,
+        using accessToken: String,
+        for provider: Passage.FederatedLogin.Provider,
+        client: Client
+    ) async throws -> FederatedIdentity {
+        switch service {
+        case is GitHub.Type:
+            return try await fetchGitHubUser(
+                using: accessToken,
+                for: provider,
+                client: client
+            )
+        case is Google.Type:
+            return try await fetchGoogleUser(
+                using: accessToken,
+                for: provider,
+                client: client
+            )
+        default:
+            throw PassageError.unexpected(message: "Unsupported OAuth provider: \(service)")
+        }
+    }
+
+}
+
+// MARK: Fetch Google Identity
+
+extension ImperialFederatedLoginService {
+
+    func fetchGoogleUser(
+        using accessToken: String,
+        for provider: Passage.FederatedLogin.Provider,
+        client: Client
+    ) async throws -> FederatedIdentity {
+        let response = try await client.get(
+            URI(string: "https://www.googleapis.com/oauth2/v2/userinfo"),
+            headers: [
+                "Authorization": "Bearer \(accessToken)"
+            ]
+        )
+
+        guard response.status == .ok else {
+            throw PassageError.unexpected(
+                message: "Google API returned status \(response.status)"
+            )
+        }
+
+        let user = try response.content.decode(GoogleUser.self)
+
+        return .init(
+            identifier: .federated(provider.name.rawValue, userId: user.id),
+            provider: provider.name.rawValue.capitalized,
+            verifiedEmails: user.isEmailVerified == true ? [user.email].compactMap { $0 } : [],
+            verifiedPhoneNumbers: [],
+            displayName: user.name,
+            profilePictureURL: user.picture
+        )
+    }
+
+}
+
+fileprivate  struct GoogleUser: Content {
+    enum CodingKeys: String, CodingKey {
+        case id, email, phone, name, picture
+        case isEmailVerified = "verified_email"
+    }
+
+    let id: String
+    let email: String?
+    let phone: String?
+    let name: String?
+    let picture: String?
+    let isEmailVerified: Bool?
+}
+
+// MARK: Fetch GitHub Identity
+
+extension ImperialFederatedLoginService {
+
+    func fetchGitHubUser(
+        using accessToken: String,
+        for provider: Passage.FederatedLogin.Provider,
+        client: Client
+    ) async throws -> FederatedIdentity {
+
+        let response = try await client.get(
+            URI(string: "https://api.github.com/user"),
+            headers: [
+                "Authorization": "Bearer \(accessToken)",
+                "Accept": "application/vnd.github+json",
+                "User-Agent": "Passage-Imperial"
+            ]
+        )
+
+        guard response.status == .ok else {
+            throw PassageError.unexpected(
+                message: "GitHub API returned status \(response.status)"
+            )
+        }
+
+        let user = try response.content.decode(GitHubUser.self)
+
+        let emailResponse = try await client.get(
+            URI(string: "https://api.github.com/user/emails"),
+            headers: [
+                "Authorization": "Bearer \(accessToken)",
+                "Accept": "application/vnd.github+json",
+                "X-GitHub-Api-Version": "2022-11-28",
+                "User-Agent": "Passage-Imperial"
+            ]
+        )
+
+        let emails = emailResponse.status == .ok
+            ? try emailResponse.content.decode([GitHubEmail].self)
+            : []
+
+        return .init(
+            identifier: .federated(provider.name.rawValue, userId: String(user.id)),
+            provider: provider.name.rawValue.capitalized,
+            verifiedEmails: emails.filter { $0.verified }.map { $0.email },
+            verifiedPhoneNumbers: [],
+            displayName: user.name,
+            profilePictureURL: user.avatarURL
+        )
+    }
+
+}
+
+fileprivate struct GitHubUser: Content {
+    enum CodingKeys: String, CodingKey {
+        case id, login, name
+        case avatarURL = "avatar_url"
+    }
+
+    let id: Int
+    let name: String?
+    var avatarURL: String?
+    let login: String
+}
+
+fileprivate struct GitHubEmail: Content {
+    let email: String
+    let primary: Bool
+    let verified: Bool
 }

@@ -10,8 +10,9 @@ let package = Package(
         .library(name: "PassageImperial", targets: ["PassageImperial"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/rozd/passage.git", from: "0.0.1"),
         .package(url: "https://github.com/vapor-community/Imperial.git", from: "2.2.0"),
+        .package(url: "https://github.com/vapor-community/passage.git", from: "0.0.3"),
+        .package(url: "https://github.com/vapor/vapor.git", from: "4.119.0"),
     ],
     targets: [
         .target(
@@ -19,6 +20,13 @@ let package = Package(
             dependencies: [
                 .product(name: "Passage", package: "passage"),
                 .product(name: "Imperial", package: "Imperial"),
+            ]
+        ),
+        .testTarget(
+            name: "PassageImperialTests",
+            dependencies: [
+                "PassageImperial",
+                .product(name: "VaporTesting", package: "vapor"),
             ]
         ),
     ]
