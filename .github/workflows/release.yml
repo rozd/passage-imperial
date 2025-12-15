@@ -202,12 +202,19 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Enable auto-merge
+      - name: Merge PR
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "Enabling auto-merge for PR #${{ inputs.pr-number }}"
-          gh pr merge ${{ inputs.pr-number }} --auto --squash --delete-branch
+          echo "Merging PR #${{ inputs.pr-number }}"
+          gh pr merge ${{ inputs.pr-number }} --squash --delete-branch
+
+      - name: Trigger release workflow for main
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Triggering release workflow for main branch"
+          gh workflow run release.yml --ref main
 
   public-release:
     runs-on: ubuntu-latest
