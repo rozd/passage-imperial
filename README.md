@@ -1,7 +1,7 @@
 # passage-imperial
 
 [![Release](https://img.shields.io/github/v/release/rozd/passage-imperial)](https://github.com/rozd/passage-imperial/releases)
-[![Swift 6.0](https://img.shields.io/badge/Swift-6.0-orange.svg)](https://swift.org)
+[![Swift 6.2](https://img.shields.io/badge/Swift-6.2-orange.svg)](https://swift.org)
 [![License](https://img.shields.io/github/license/rozd/passage-imperial)](LICENSE)
 [![codecov](https://codecov.io/gh/rozd/passage-imperial/branch/main/graph/badge.svg)](https://codecov.io/gh/rozd/passage-imperial)
 
@@ -112,7 +112,7 @@ The service automatically fetches user information from OAuth providers:
 
 ## Requirements
 
-- Swift 6.0+
+- Swift 6.2+
 - macOS 13+ / Linux
 - Vapor 4.119+
 - Imperial 2.2+
