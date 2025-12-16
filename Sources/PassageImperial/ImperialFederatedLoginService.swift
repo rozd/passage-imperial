@@ -6,10 +6,10 @@ import ImperialGoogle
 
 public struct ImperialFederatedLoginService: Passage.FederatedLoginService {
 
-    public let services: [Passage.FederatedLogin.Provider.Name: any FederatedService.Type]
+    public let services: [FederatedProvider.Name: any FederatedService.Type]
 
     public init(
-        services: [Passage.FederatedLogin.Provider.Name: any FederatedService.Type]
+        services: [FederatedProvider.Name: any FederatedService.Type]
     ) {
         self.services = services
     }
@@ -27,14 +27,14 @@ public struct ImperialFederatedLoginService: Passage.FederatedLoginService {
         ) async throws -> some AsyncResponseEncodable
     ) throws {
         for (name, service) in services {
-            guard let provider = config.providers.first(where: { $0.name == name }) else {
+            guard let cfg = config.providers.first(where: { $0.provider.name == name }) else {
                 throw PassageError.unexpected(
                     message: "Provider for name \(name) is not configured"
                 )
             }
 
-            let loginPath = group + config.loginPath(for: provider)
-            let callbackPath = group + config.callbackPath(for: provider)
+            let loginPath = group + config.loginPath(for: cfg)
+            let callbackPath = group + config.callbackPath(for: cfg)
             let loginURL = origin.appending(path: loginPath.string)
             let callbackURL = origin.appending(path: callbackPath.string)
 
@@ -42,14 +42,14 @@ public struct ImperialFederatedLoginService: Passage.FederatedLoginService {
                 from: service,
                 authenticate: loginURL.absoluteString,
                 callback: callbackURL.absoluteString,
-                scope: provider.scope,
+                scope: cfg.provider.scope,
             ) { (request: Request, accessToken: String) in
 
                 // Fetch user info from the OAuth provider
                 let identity = try await self.fetchIdentity(
                     from: service,
                     using: accessToken,
-                    for: provider,
+                    for: cfg.provider,
                     client: request.client
                 )
 
@@ -66,7 +66,7 @@ extension ImperialFederatedLoginService {
     func fetchIdentity(
         from service: any FederatedService.Type,
         using accessToken: String,
-        for provider: Passage.FederatedLogin.Provider,
+        for provider: FederatedProvider,
         client: Client
     ) async throws -> FederatedIdentity {
         switch service {
@@ -95,7 +95,7 @@ extension ImperialFederatedLoginService {
 
     func fetchGoogleUser(
         using accessToken: String,
-        for provider: Passage.FederatedLogin.Provider,
+        for provider: FederatedProvider,
         client: Client
     ) async throws -> FederatedIdentity {
         let response = try await client.get(
@@ -114,8 +114,8 @@ extension ImperialFederatedLoginService {
         let user = try response.content.decode(GoogleUser.self)
 
         return .init(
-            identifier: .federated(provider.name.rawValue, userId: user.id),
-            provider: provider.name.rawValue.capitalized,
+            identifier: .federated(provider.name, userId: user.id),
+            provider: provider.name,
             verifiedEmails: user.isEmailVerified == true ? [user.email].compactMap { $0 } : [],
             verifiedPhoneNumbers: [],
             displayName: user.name,
@@ -145,7 +145,7 @@ extension ImperialFederatedLoginService {
 
     func fetchGitHubUser(
         using accessToken: String,
-        for provider: Passage.FederatedLogin.Provider,
+        for provider: FederatedProvider,
         client: Client
     ) async throws -> FederatedIdentity {
 
@@ -181,8 +181,8 @@ extension ImperialFederatedLoginService {
             : []
 
         return .init(
-            identifier: .federated(provider.name.rawValue, userId: String(user.id)),
-            provider: provider.name.rawValue.capitalized,
+            identifier: .federated(provider.name, userId: String(user.id)),
+            provider: provider.name,
             verifiedEmails: emails.filter { $0.verified }.map { $0.email },
             verifiedPhoneNumbers: [],
             displayName: user.name,

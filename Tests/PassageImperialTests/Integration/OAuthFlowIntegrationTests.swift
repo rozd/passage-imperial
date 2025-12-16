@@ -27,7 +27,7 @@ struct OAuthFlowIntegrationTests {
 
         let config = Passage.Configuration.FederatedLogin(
             routes: .init(group: "oauth"),
-            providers: [.github()]
+            providers: [.init(provider: .github())]
         )
 
         try service.register(
@@ -62,7 +62,7 @@ struct OAuthFlowIntegrationTests {
 
         let config = Passage.Configuration.FederatedLogin(
             routes: .init(group: "oauth"),
-            providers: [.google()]
+            providers: [.init(provider: .google())]
         )
 
         try service.register(
@@ -99,7 +99,7 @@ struct OAuthFlowIntegrationTests {
 
         let config = Passage.Configuration.FederatedLogin(
             routes: .init(group: "oauth"),
-            providers: [.github(), .google()]
+            providers: [.init(provider: .github()), .init(provider: .google())]
         )
 
         try service.register(
@@ -134,7 +134,7 @@ struct OAuthFlowIntegrationTests {
 
         let config = Passage.Configuration.FederatedLogin(
             routes: .init(group: "oauth"),
-            providers: [.github()]
+            providers: [.init(provider: .github())]
         )
 
         // Different origins should create different callback URLs
@@ -160,7 +160,7 @@ struct ProviderCredentialsTests {
 
     @Test("conventional credentials use environment variables")
     func conventionalCredentialsUseEnv() {
-        let provider = Passage.FederatedLogin.Provider.github(
+        let provider = FederatedProvider.github(
             credentials: .conventional
         )
 
@@ -173,7 +173,7 @@ struct ProviderCredentialsTests {
 
     @Test("client credentials store id and secret")
     func clientCredentialsStoreIdAndSecret() {
-        let provider = Passage.FederatedLogin.Provider.github(
+        let provider = FederatedProvider.github(
             credentials: .client(id: "my-client-id", secret: "my-client-secret")
         )
 
@@ -194,9 +194,9 @@ struct RouteGroupTests {
     @Test("default route group creates expected paths")
     func defaultRouteGroupCreatesPaths() {
         let config = Passage.Configuration.FederatedLogin(
-            providers: [.github()]
+            providers: [.init(provider: .github())]
         )
-        let provider = Passage.FederatedLogin.Provider.github()
+        let provider = FederatedProvider.init(provider: .github())
         let loginPath = config.loginPath(for: provider)
 
         // Default group is "oauth"
@@ -207,9 +207,9 @@ struct RouteGroupTests {
     func customRouteGroupCreatesPaths() {
         let config = Passage.Configuration.FederatedLogin(
             routes: .init(group: "identity", "providers"),
-            providers: [.github()]
+            providers: [.init(provider: .github())]
         )
-        let provider = Passage.FederatedLogin.Provider.github()
+        let provider = FederatedProvider.init(provider: .github())
         let loginPath = config.loginPath(for: provider)
 
         #expect(loginPath.map { $0.description } == ["identity", "providers", "github"])
@@ -223,7 +223,7 @@ struct AccountLinkingConfigurationTests {
 
     @Test("default state expiration is 600 seconds")
     func defaultStateExpirationIs600Seconds() {
-        let linking = Passage.Configuration.FederatedLogin.AccountLinking(strategy: .disabled)
+        let linking = Passage.Configuration.FederatedLogin.AccountLinking(resolution: .disabled)
         #expect(linking.stateExpiration == 600)
     }
 
@@ -257,7 +257,7 @@ struct AccountLinkingConfigurationTests {
     func linkSelectPathCombinesGroupAndSelectRoutes() {
         let config = Passage.Configuration.FederatedLogin(
             routes: .init(group: "oauth"),
-            providers: [.github()]
+            providers: [.init(provider: .github())]
         )
 
         let path = config.linkSelectPath
@@ -268,7 +268,7 @@ struct AccountLinkingConfigurationTests {
     func linkVerifyPathCombinesGroupAndVerifyRoutes() {
         let config = Passage.Configuration.FederatedLogin(
             routes: .init(group: "oauth"),
-            providers: [.github()]
+            providers: [.init(provider: .github())]
         )
 
         let path = config.linkVerifyPath
@@ -284,7 +284,7 @@ struct RedirectLocationTests {
     @Test("default redirect location is root")
     func defaultRedirectLocationIsRoot() {
         let config = Passage.Configuration.FederatedLogin(
-            providers: [.github()]
+            providers: [.init(provider: .github())]
         )
         #expect(config.redirectLocation == "/")
     }
@@ -292,7 +292,7 @@ struct RedirectLocationTests {
     @Test("custom redirect location is used")
     func customRedirectLocationIsUsed() {
         let config = Passage.Configuration.FederatedLogin(
-            providers: [.github()],
+            providers: [.init(provider: .github())],
             redirectLocation: "/dashboard"
         )
         #expect(config.redirectLocation == "/dashboard")
