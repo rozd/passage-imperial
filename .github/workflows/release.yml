@@ -209,12 +209,42 @@ jobs:
           echo "Merging PR #${{ inputs.pr-number }}"
           gh pr merge ${{ inputs.pr-number }} --squash --delete-branch
 
-      - name: Trigger release workflow for main
+  post-merge-release:
+    runs-on: ubuntu-latest
+    needs: auto-merge
+    if: inputs.pr-number != ''
+    steps:
+      - name: Checkout main branch
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Get version from tags
+        id: get-version
+        run: |
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "0.0.0")
+          LATEST_TAG="${LATEST_TAG#v}"
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$LATEST_TAG"
+          NEW_VERSION="${MAJOR}.${MINOR}.$((PATCH + 1))"
+          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Create and push tag
+        run: |
+          VERSION="${{ steps.get-version.outputs.version }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "${VERSION}" -m "Release ${VERSION}"
+          git push origin "${VERSION}"
+
+      - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "Triggering release workflow for main branch"
-          gh workflow run release.yml --ref main
+          VERSION="${{ steps.get-version.outputs.version }}"
+          gh release create "${VERSION}" \
+            --title "Release ${VERSION}" \
+            --generate-notes
 
   public-release:
     runs-on: ubuntu-latest
