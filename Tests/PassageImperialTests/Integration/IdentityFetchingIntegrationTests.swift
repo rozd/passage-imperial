@@ -166,7 +166,7 @@ struct FetchGoogleUserTests {
         )
 
         let service = ImperialFederatedLoginService(services: [.google: Google.self])
-        let provider = Passage.FederatedLogin.Provider.google()
+        let provider = FederatedProvider.google()
 
         // Call the actual production code
         let identity = try await service.fetchGoogleUser(
@@ -177,8 +177,8 @@ struct FetchGoogleUserTests {
 
         #expect(identity.identifier.kind == .federated)
         #expect(identity.identifier.value == "google-user-123")
-        #expect(identity.identifier.provider == "google")
-        #expect(identity.provider == "Google")
+        #expect(identity.identifier.provider?.description == "google")
+        #expect(identity.provider.description == "google")
         #expect(identity.verifiedEmails == ["verified@gmail.com"])
         #expect(identity.verifiedPhoneNumbers.isEmpty)
         #expect(identity.displayName == "Test User")
@@ -203,7 +203,7 @@ struct FetchGoogleUserTests {
         )
 
         let service = ImperialFederatedLoginService(services: [.google: Google.self])
-        let provider = Passage.FederatedLogin.Provider.google()
+        let provider = FederatedProvider.google()
 
         let identity = try await service.fetchGoogleUser(
             using: "test-token",
@@ -229,7 +229,7 @@ struct FetchGoogleUserTests {
         )
 
         let service = ImperialFederatedLoginService(services: [.google: Google.self])
-        let provider = Passage.FederatedLogin.Provider.google()
+        let provider = FederatedProvider.google()
 
         let identity = try await service.fetchGoogleUser(
             using: "test-token",
@@ -257,7 +257,7 @@ struct FetchGoogleUserTests {
         )
 
         let service = ImperialFederatedLoginService(services: [.google: Google.self])
-        let provider = Passage.FederatedLogin.Provider.google()
+        let provider = FederatedProvider.google()
 
         let identity = try await service.fetchGoogleUser(
             using: "test-token",
@@ -281,7 +281,7 @@ struct FetchGoogleUserTests {
         )
 
         let service = ImperialFederatedLoginService(services: [.google: Google.self])
-        let provider = Passage.FederatedLogin.Provider.google()
+        let provider = FederatedProvider.google()
 
         var didThrow = false
         do {
@@ -310,7 +310,7 @@ struct FetchGoogleUserTests {
         )
 
         let service = ImperialFederatedLoginService(services: [.google: Google.self])
-        let provider = Passage.FederatedLogin.Provider.google()
+        let provider = FederatedProvider.google()
 
         var didThrow = false
         do {
@@ -360,7 +360,7 @@ struct FetchGitHubUserTests {
         )
 
         let service = ImperialFederatedLoginService(services: [.github: GitHub.self])
-        let provider = Passage.FederatedLogin.Provider.github()
+        let provider = FederatedProvider.github()
 
         let identity = try await service.fetchGitHubUser(
             using: "test-github-token",
@@ -370,8 +370,8 @@ struct FetchGitHubUserTests {
 
         #expect(identity.identifier.kind == .federated)
         #expect(identity.identifier.value == "12345")
-        #expect(identity.identifier.provider == "github")
-        #expect(identity.provider == "Github")
+        #expect(identity.identifier.provider?.description == "github")
+        #expect(identity.provider.description == "github")
         #expect(identity.verifiedEmails == ["octocat@github.com", "octocat@example.com"])
         #expect(identity.verifiedPhoneNumbers.isEmpty)
         #expect(identity.displayName == "The Octocat")
@@ -403,7 +403,7 @@ struct FetchGitHubUserTests {
         )
 
         let service = ImperialFederatedLoginService(services: [.github: GitHub.self])
-        let provider = Passage.FederatedLogin.Provider.github()
+        let provider = FederatedProvider.github()
 
         let identity = try await service.fetchGitHubUser(
             using: "test-token",
@@ -432,7 +432,7 @@ struct FetchGitHubUserTests {
         )
 
         let service = ImperialFederatedLoginService(services: [.github: GitHub.self])
-        let provider = Passage.FederatedLogin.Provider.github()
+        let provider = FederatedProvider.github()
 
         let identity = try await service.fetchGitHubUser(
             using: "test-token",
@@ -464,7 +464,7 @@ struct FetchGitHubUserTests {
         )
 
         let service = ImperialFederatedLoginService(services: [.github: GitHub.self])
-        let provider = Passage.FederatedLogin.Provider.github()
+        let provider = FederatedProvider.github()
 
         let identity = try await service.fetchGitHubUser(
             using: "test-token",
@@ -486,7 +486,7 @@ struct FetchGitHubUserTests {
         )
 
         let service = ImperialFederatedLoginService(services: [.github: GitHub.self])
-        let provider = Passage.FederatedLogin.Provider.github()
+        let provider = FederatedProvider.github()
 
         var didThrow = false
         do {
@@ -515,7 +515,7 @@ struct FetchGitHubUserTests {
         )
 
         let service = ImperialFederatedLoginService(services: [.github: GitHub.self])
-        let provider = Passage.FederatedLogin.Provider.github()
+        let provider = FederatedProvider.github()
 
         var didThrow = false
         do {
@@ -550,7 +550,7 @@ struct FetchGitHubUserTests {
         )
 
         let service = ImperialFederatedLoginService(services: [.github: GitHub.self])
-        let provider = Passage.FederatedLogin.Provider.github()
+        let provider = FederatedProvider.github()
 
         _ = try await service.fetchGitHubUser(
             using: "my-token",
@@ -590,7 +590,7 @@ struct FetchIdentityTests {
         )
 
         let service = ImperialFederatedLoginService(services: [.google: Google.self])
-        let provider = Passage.FederatedLogin.Provider.google()
+        let provider = FederatedProvider.google()
 
         let identity = try await service.fetchIdentity(
             from: Google.self,
@@ -600,7 +600,7 @@ struct FetchIdentityTests {
         )
 
         #expect(identity.identifier.value == "google-id-123")
-        #expect(identity.provider == "Google")
+        #expect(identity.provider.description == "google")
     }
 
     @Test("fetchIdentity routes to GitHub for GitHub service")
@@ -618,7 +618,7 @@ struct FetchIdentityTests {
         )
 
         let service = ImperialFederatedLoginService(services: [.github: GitHub.self])
-        let provider = Passage.FederatedLogin.Provider.github()
+        let provider = FederatedProvider.github()
 
         let identity = try await service.fetchIdentity(
             from: GitHub.self,
@@ -628,14 +628,14 @@ struct FetchIdentityTests {
         )
 
         #expect(identity.identifier.value == "54321")
-        #expect(identity.provider == "Github")
+        #expect(identity.provider.description == "github")
     }
 
     @Test("fetchIdentity throws for unsupported provider")
     func fetchIdentityThrowsForUnsupportedProvider() async throws {
         let mockClient = MockHTTPClient()
         let service = ImperialFederatedLoginService(services: [:])
-        let provider = Passage.FederatedLogin.Provider.custom(name: "unsupported")
+        let provider = FederatedProvider.custom(name: "unsupported")
 
         var didThrow = false
         do {

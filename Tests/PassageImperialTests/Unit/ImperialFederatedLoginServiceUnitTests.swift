@@ -83,7 +83,7 @@ struct InitializationTests {
 
     @Test("initializes with custom provider name")
     func initWithCustomProviderName() {
-        let customName = Passage.FederatedLogin.Provider.Name(rawValue: "custom-provider")
+        let customName = FederatedProvider.Name("custom-provider")
         let service = ImperialFederatedLoginService(services: [
             customName: GitHub.self
         ])
@@ -143,7 +143,7 @@ struct ProviderConfigurationErrorTests {
 
         // Only configure GitHub, not Google
         let config = Passage.Configuration.FederatedLogin(
-            providers: [.github()]
+            providers: [.init(provider: .github())]
         )
 
         var didThrow = false
@@ -188,7 +188,7 @@ struct TypeConformanceTests {
 
     @Test("Services dictionary is accessible")
     func servicesAccessible() {
-        let services: [Passage.FederatedLogin.Provider.Name: any FederatedService.Type] = [
+        let services: [FederatedProvider.Name: any FederatedService.Type] = [
             .github: GitHub.self,
             .google: Google.self
         ]
@@ -204,9 +204,9 @@ struct ProviderNameTests {
 
     @Test("Provider.Name equality")
     func providerNameEquality() {
-        let name1 = Passage.FederatedLogin.Provider.Name(rawValue: "github")
-        let name2 = Passage.FederatedLogin.Provider.Name(rawValue: "github")
-        let name3 = Passage.FederatedLogin.Provider.Name(rawValue: "google")
+        let name1 = FederatedProvider.Name("github")
+        let name2 = FederatedProvider.Name("github")
+        let name3 = FederatedProvider.Name("google")
 
         #expect(name1 == name2)
         #expect(name1 != name3)
@@ -214,13 +214,13 @@ struct ProviderNameTests {
 
     @Test("Provider.Name static values")
     func providerNameStaticValues() {
-        #expect(Passage.FederatedLogin.Provider.Name.github.rawValue == "github")
-        #expect(Passage.FederatedLogin.Provider.Name.google.rawValue == "google")
+        #expect(FederatedProvider.Name.github.description == "github")
+        #expect(FederatedProvider.Name.google.description == "google")
     }
 
     @Test("Provider.Name hashable")
     func providerNameHashable() {
-        var set = Set<Passage.FederatedLogin.Provider.Name>()
+        var set = Set<FederatedProvider.Name>()
         set.insert(.github)
         set.insert(.google)
         set.insert(.github) // Duplicate
@@ -237,8 +237,8 @@ struct FederatedIdentityTests {
     @Test("FederatedIdentity initializes correctly")
     func federatedIdentityInit() {
         let identity = FederatedIdentity(
-            identifier: .federated("github", userId: "12345"),
-            provider: "GitHub",
+            identifier: .federated(.github, userId: "12345"),
+            provider: .named("GitHub"),
             verifiedEmails: ["user@example.com"],
             verifiedPhoneNumbers: [],
             displayName: "Test User",
@@ -247,8 +247,8 @@ struct FederatedIdentityTests {
 
         #expect(identity.identifier.kind == .federated)
         #expect(identity.identifier.value == "12345")
-        #expect(identity.identifier.provider == "github")
-        #expect(identity.provider == "GitHub")
+        #expect(identity.identifier.provider?.description == "github")
+        #expect(identity.provider.description == "GitHub")
         #expect(identity.verifiedEmails == ["user@example.com"])
         #expect(identity.verifiedPhoneNumbers.isEmpty)
         #expect(identity.displayName == "Test User")
@@ -258,8 +258,8 @@ struct FederatedIdentityTests {
     @Test("FederatedIdentity email accessor returns first email")
     func federatedIdentityEmailAccessor() {
         let identity = FederatedIdentity(
-            identifier: .federated("github", userId: "12345"),
-            provider: "GitHub",
+            identifier: .federated(.github, userId: "12345"),
+            provider: .named("GitHub"),
             verifiedEmails: ["first@example.com", "second@example.com"],
             verifiedPhoneNumbers: [],
             displayName: nil,
@@ -272,8 +272,8 @@ struct FederatedIdentityTests {
     @Test("FederatedIdentity email accessor returns nil when empty")
     func federatedIdentityEmailAccessorReturnsNil() {
         let identity = FederatedIdentity(
-            identifier: .federated("github", userId: "12345"),
-            provider: "GitHub",
+            identifier: .federated(.github, userId: "12345"),
+            provider: .named("GitHub"),
             verifiedEmails: [],
             verifiedPhoneNumbers: [],
             displayName: nil,
@@ -286,8 +286,8 @@ struct FederatedIdentityTests {
     @Test("FederatedIdentity phone accessor returns first phone")
     func federatedIdentityPhoneAccessor() {
         let identity = FederatedIdentity(
-            identifier: .federated("github", userId: "12345"),
-            provider: "GitHub",
+            identifier: .federated(.github, userId: "12345"),
+            provider: .named("GitHub"),
             verifiedEmails: [],
             verifiedPhoneNumbers: ["+1234567890", "+0987654321"],
             displayName: nil,
@@ -300,8 +300,8 @@ struct FederatedIdentityTests {
     @Test("FederatedIdentity phone accessor returns nil when empty")
     func federatedIdentityPhoneAccessorReturnsNil() {
         let identity = FederatedIdentity(
-            identifier: .federated("github", userId: "12345"),
-            provider: "GitHub",
+            identifier: .federated(.github, userId: "12345"),
+            provider: .named("GitHub"),
             verifiedEmails: [],
             verifiedPhoneNumbers: [],
             displayName: nil,
@@ -314,8 +314,8 @@ struct FederatedIdentityTests {
     @Test("FederatedIdentity userInfo accessor")
     func federatedIdentityUserInfoAccessor() {
         let identity = FederatedIdentity(
-            identifier: .federated("github", userId: "12345"),
-            provider: "GitHub",
+            identifier: .federated(.github, userId: "12345"),
+            provider: .named("GitHub"),
             verifiedEmails: ["user@example.com"],
             verifiedPhoneNumbers: ["+1234567890"],
             displayName: "Test User",
@@ -335,20 +335,20 @@ struct IdentifierTests {
 
     @Test("federated identifier creation")
     func federatedIdentifierCreation() {
-        let identifier = Identifier.federated("github", userId: "user123")
+        let identifier = Identifier.federated(.github, userId: "user123")
 
         #expect(identifier.kind == .federated)
         #expect(identifier.value == "user123")
-        #expect(identifier.provider == "github")
+        #expect(identifier.provider?.description == "github")
     }
 
     @Test("federated identifier with different providers")
     func federatedIdentifierWithDifferentProviders() {
-        let githubId = Identifier.federated("github", userId: "gh123")
-        let googleId = Identifier.federated("google", userId: "goog456")
+        let githubId = Identifier.federated(.github, userId: "gh123")
+        let googleId = Identifier.federated(.google, userId: "goog456")
 
-        #expect(githubId.provider == "github")
-        #expect(googleId.provider == "google")
+        #expect(githubId.provider?.description == "github")
+        #expect(googleId.provider?.description == "google")
         #expect(githubId != googleId)
     }
 }
@@ -362,10 +362,10 @@ struct ConfigurationPathTests {
     func loginPathGeneration() {
         let config = Passage.Configuration.FederatedLogin(
             routes: .init(group: "oauth"),
-            providers: [.github()]
+            providers: [.init(provider: .github())]
         )
 
-        let provider = Passage.FederatedLogin.Provider.github()
+        let provider = FederatedProvider.github()
         let path = config.loginPath(for: provider)
 
         #expect(path.map { $0.description } == ["oauth", "github"])
@@ -375,10 +375,10 @@ struct ConfigurationPathTests {
     func callbackPathGeneration() {
         let config = Passage.Configuration.FederatedLogin(
             routes: .init(group: "oauth"),
-            providers: [.github()]
+            providers: [.init(provider: .github())]
         )
 
-        let provider = Passage.FederatedLogin.Provider.github()
+        let provider = FederatedProvider.github()
         let path = config.callbackPath(for: provider)
 
         #expect(path.map { $0.description } == ["oauth", "github", "callback"])
@@ -392,7 +392,7 @@ struct ProviderFactoryTests {
 
     @Test("github() creates GitHub provider")
     func githubProviderFactory() {
-        let provider = Passage.FederatedLogin.Provider.github()
+        let provider = FederatedProvider.github()
 
         #expect(provider.name == .github)
         #expect(provider.scope.isEmpty)
@@ -400,7 +400,7 @@ struct ProviderFactoryTests {
 
     @Test("google() creates Google provider")
     func googleProviderFactory() {
-        let provider = Passage.FederatedLogin.Provider.google()
+        let provider = FederatedProvider.google()
 
         #expect(provider.name == .google)
         #expect(provider.scope.isEmpty)
@@ -408,7 +408,7 @@ struct ProviderFactoryTests {
 
     @Test("github() with scope")
     func githubProviderWithScope() {
-        let provider = Passage.FederatedLogin.Provider.github(
+        let provider = FederatedProvider.github(
             scope: ["user:email", "read:user"]
         )
 
@@ -418,7 +418,7 @@ struct ProviderFactoryTests {
 
     @Test("google() with scope")
     func googleProviderWithScope() {
-        let provider = Passage.FederatedLogin.Provider.google(
+        let provider = FederatedProvider.google(
             scope: ["email", "profile"]
         )
 
@@ -428,12 +428,12 @@ struct ProviderFactoryTests {
 
     @Test("custom() creates custom provider")
     func customProviderFactory() {
-        let provider = Passage.FederatedLogin.Provider.custom(
+        let provider = FederatedProvider.custom(
             name: "my-custom-provider",
             scope: ["custom:scope"]
         )
 
-        #expect(provider.name.rawValue == "my-custom-provider")
+        #expect(provider.name.description == "my-custom-provider")
         #expect(provider.scope == ["custom:scope"])
     }
 }
