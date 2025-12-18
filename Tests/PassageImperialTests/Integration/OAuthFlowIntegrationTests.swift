@@ -196,11 +196,11 @@ struct RouteGroupTests {
         let config = Passage.Configuration.FederatedLogin(
             providers: [.init(provider: .github())]
         )
-        let provider = FederatedProvider.init(provider: .github())
+        let provider = Passage.Configuration.FederatedLogin.Provider(provider: .github())
         let loginPath = config.loginPath(for: provider)
 
         // Default group is "oauth"
-        #expect(loginPath.map { $0.description } == ["oauth", "github"])
+        #expect(loginPath.map { $0.description } == ["connect", "github"])
     }
 
     @Test("custom route group creates expected paths")
@@ -209,7 +209,7 @@ struct RouteGroupTests {
             routes: .init(group: "identity", "providers"),
             providers: [.init(provider: .github())]
         )
-        let provider = FederatedProvider.init(provider: .github())
+        let provider = Passage.Configuration.FederatedLogin.Provider(provider: .github())
         let loginPath = config.loginPath(for: provider)
 
         #expect(loginPath.map { $0.description } == ["identity", "providers", "github"])
@@ -230,7 +230,7 @@ struct AccountLinkingConfigurationTests {
     @Test("custom state expiration is used")
     func customStateExpirationIsUsed() {
         let linking = Passage.Configuration.FederatedLogin.AccountLinking(
-            strategy: .disabled,
+            resolution: .disabled,
             stateExpiration: 1800
         )
         #expect(linking.stateExpiration == 1800)
@@ -260,7 +260,7 @@ struct AccountLinkingConfigurationTests {
             providers: [.init(provider: .github())]
         )
 
-        let path = config.linkSelectPath
+        let path = config.linkAccountSelectPath
         #expect(path.map { $0.description } == ["oauth", "link", "select"])
     }
 
@@ -271,7 +271,7 @@ struct AccountLinkingConfigurationTests {
             providers: [.init(provider: .github())]
         )
 
-        let path = config.linkVerifyPath
+        let path = config.linkAccountVerifyPath
         #expect(path.map { $0.description } == ["oauth", "link", "verify"])
     }
 }
