@@ -365,7 +365,7 @@ struct ConfigurationPathTests {
             providers: [.init(provider: .github())]
         )
 
-        let provider = FederatedProvider.github()
+        let provider = Passage.Configuration.FederatedLogin.Provider(provider: .github())
         let path = config.loginPath(for: provider)
 
         #expect(path.map { $0.description } == ["oauth", "github"])
@@ -378,7 +378,7 @@ struct ConfigurationPathTests {
             providers: [.init(provider: .github())]
         )
 
-        let provider = FederatedProvider.github()
+        let provider = Passage.Configuration.FederatedLogin.Provider(provider: .github())
         let path = config.callbackPath(for: provider)
 
         #expect(path.map { $0.description } == ["oauth", "github", "callback"])
