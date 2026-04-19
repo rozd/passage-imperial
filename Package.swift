@@ -1,4 +1,4 @@
-// swift-tools-version:6.0
+// swift-tools-version:6.3
 import PackageDescription
 
 let package = Package(
@@ -11,8 +11,8 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/vapor-community/Imperial.git", from: "2.2.0"),
-        .package(url: "https://github.com/vapor-community/passage.git", from: "0.0.11"),
-        .package(url: "https://github.com/vapor/vapor.git", from: "4.119.0"),
+        .package(url: "https://github.com/vapor-community/passage.git", from: "0.1.1"),
+        .package(url: "https://github.com/vapor/vapor.git", from: "4.121.4"),
     ],
     targets: [
         .target(
