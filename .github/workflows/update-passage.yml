@@ -13,7 +13,6 @@ on:
 permissions:
   contents: write
   pull-requests: write
-  actions: write
 
 concurrency:
   group: update-passage
@@ -22,14 +21,26 @@ concurrency:
 jobs:
   update-dependency:
     runs-on: macos-26
-    outputs:
-      pr-number: ${{ steps.create-pr.outputs.pr-number }}
-      branch-name: ${{ steps.create-branch.outputs.branch-name }}
     steps:
+      # WORKFLOW_PAT must be a fine-grained PAT with Contents: write on this repo.
+      # GITHUB_TOKEN cannot be used for the push below: pushes authored by
+      # GITHUB_TOKEN do not trigger downstream workflow runs (recursion guard),
+      # which prevents release.yml's build-test-archive check from reporting on
+      # the PR head.
+      - name: Verify required secrets
+        env:
+          WORKFLOW_PAT: ${{ secrets.WORKFLOW_PAT }}
+        run: |
+          if [ -z "$WORKFLOW_PAT" ]; then
+            echo "::error::WORKFLOW_PAT secret is not set. Create a fine-grained PAT (Contents: write) and add it as WORKFLOW_PAT."
+            exit 1
+          fi
+
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          token: ${{ secrets.WORKFLOW_PAT }}
 
       - name: Setup Swift
         uses: swift-actions/setup-swift@v3
@@ -105,7 +116,6 @@ jobs:
           git push origin "$BRANCH_NAME"
 
       - name: Create Pull Request
-        id: create-pr
         if: steps.check-branch.outputs.exists != 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -125,15 +135,4 @@ jobs:
             --head "${{ steps.create-branch.outputs.branch-name }}" \
             --base main)
           PR_NUMBER=$(echo "$PR_URL" | grep -oE '[0-9]+$')
-          echo "pr-number=$PR_NUMBER" >> $GITHUB_OUTPUT
-          echo "pr-url=$PR_URL" >> $GITHUB_OUTPUT
           echo "Created PR #$PR_NUMBER: $PR_URL"
-
-  trigger-release:
-    needs: update-dependency
-    if: needs.update-dependency.outputs.pr-number != ''
-    uses: ./.github/workflows/release.yml
-    with:
-      ref: ${{ needs.update-dependency.outputs.branch-name }}
-      pr-number: ${{ needs.update-dependency.outputs.pr-number }}
-    secrets: inherit
