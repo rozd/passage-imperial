@@ -1,5 +1,5 @@
 {
-  "originHash" : "f535bccdfb614cae53ccb012ef80e5642245a9f0e036c1be4527e33174ad5bbc",
+  "originHash" : "9cd76f5522694380cd8b3a31bfc6c4fcd5b986997884b7b82433c2ee5f782e1a",
   "pins" : [
     {
       "identity" : "async-http-client",
@@ -87,8 +87,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/vapor-community/passage.git",
       "state" : {
-        "revision" : "a0149943499a37c2370a93428c529c1b2adae7b6",
-        "version" : "0.1.2"
+        "revision" : "372ea986bae91766a8dc01ed22c14e2291e7a7a6",
+        "version" : "0.2.0"
       }
     },
     {
@@ -222,8 +222,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-metrics.git",
       "state" : {
-        "revision" : "c6593dac9d65f2517280d88c430dadffdf259737",
-        "version" : "2.10.0"
+        "revision" : "d51c8d13fa366eec807eedb4e37daa60ff5bfdd5",
+        "version" : "2.10.1"
       }
     },
     {
