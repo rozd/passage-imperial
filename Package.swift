@@ -11,7 +11,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/vapor-community/Imperial.git", from: "2.2.0"),
-        .package(url: "https://github.com/vapor-community/passage.git", from: "0.3.0"),
+        .package(url: "https://github.com/vapor-community/passage.git", from: "0.3.1"),
         .package(url: "https://github.com/vapor/vapor.git", from: "4.121.4"),
     ],
     targets: [
