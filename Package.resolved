@@ -1,5 +1,5 @@
 {
-  "originHash" : "a4bb9a4a779cfe9a8c4cecb878de5aaefa18e10c77d2da562e67fe915f1f31e1",
+  "originHash" : "0322f76598d905679ab1e6d0f4d12200401cd873e524db9f503f299a5041948b",
   "pins" : [
     {
       "identity" : "async-http-client",
@@ -24,8 +24,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/vapor/console-kit.git",
       "state" : {
-        "revision" : "32ad16dfc7677b927b225595ed18f3debb32f577",
-        "version" : "4.16.0"
+        "revision" : "15121e1ec44a0a2064e43545d1390f02cc19b07d",
+        "version" : "4.16.1"
       }
     },
     {
@@ -87,8 +87,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/vapor-community/passage.git",
       "state" : {
-        "revision" : "9988bd311a3144300147992e204385d4ccf9ebdd",
-        "version" : "0.5.12"
+        "revision" : "5452e0106f0a49973284bb0689912790c1fc0241",
+        "version" : "0.5.13"
       }
     },
     {
@@ -213,8 +213,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-log.git",
       "state" : {
-        "revision" : "a878e7f8f46cfc0e1125e565b5c08e7d5272dc9a",
-        "version" : "1.14.0"
+        "revision" : "3ffafb9722d5d918c614feb496c8789a3b59d222",
+        "version" : "1.15.0"
       }
     },
     {
@@ -303,8 +303,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-system.git",
       "state" : {
-        "revision" : "50688cacbd41d547e9eb9f7a213542340b7c442b",
-        "version" : "1.7.5"
+        "revision" : "869129b7bf4ecc57b97d0193ad29690ca2134750",
+        "version" : "1.8.1"
       }
     },
     {
